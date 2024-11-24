@@ -118,10 +118,14 @@ app.get("/landing", (request, response) => {
   if (!request.session.user) {
     return response.redirect("/login");
   }
+
+  const isAdmin = request.session.user.role === "admin";
+
   response.render("landing", {
     user: request.session.user,
+    username: request.session.user.username,
+    USERS: isAdmin ? USERS : [],
   });
-  const user = USERS.find((user) => user.username === username);
 });
 
 // Start server
