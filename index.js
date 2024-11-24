@@ -2,6 +2,8 @@ const express = require("express");
 const path = require("path");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
+const { error } = require("console");
+const e = require("express");
 
 const app = express();
 const PORT = 3000;
@@ -41,7 +43,7 @@ const USERS = [
 
 // GET /login - Render login form
 app.get("/login", (request, response) => {
-  response.render("login");
+  response.render("login", { error: null });
 });
 
 // POST /login - Allows a user to login
@@ -50,16 +52,22 @@ app.post("/login", async (request, response) => {
   const user = USERS.find(
     (user) => user.username === username && user.email === email
   );
-  if (user && (await bcrypt.compare(password, user.password))) {
-    request.session.user = user;
-    return response.redirect("/landing");
-  }
 
   if (!user) {
     return response.render("login", {
       error: "Invalid credentials",
     });
   }
+
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    return response.render("login", {
+      error: "Invalid credentials",
+    });
+  }
+
+  request.session.user = user;
+  return response.redirect("/landing");
 });
 
 // POST /logout - Logs a user out
@@ -75,19 +83,26 @@ app.get("/signup", (request, response) => {
   return response.render("signup", {
     email: email ?? "",
     username: username ?? "",
+    error: null,
   });
 });
 
 // POST /signup - Allows a user to signup
-app.post("/signup", (request, response) => {
+app.post("/signup", async (request, response) => {
   const { username, email, password } = request.body;
+
+  if (!username || !email || !password) {
+    return response.render("signup", {
+      error: "All fields are required",
+    });
+  }
 
   const existingUser = USERS.find(
     (existingUser) => existingUser.email === email
   );
   if (existingUser) {
-    return response.render("error", {
-      error: "Email already associated with an account",
+    return response.render("signup", {
+      error: "Invalid credentials or email already in use",
     });
   }
 
