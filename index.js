@@ -45,23 +45,21 @@ app.get("/login", (request, response) => {
 });
 
 // POST /login - Allows a user to login
-app.post("/login", (request, response) => {
+app.post("/login", async (request, response) => {
   const { username, email, password } = request.body;
   const user = USERS.find(
-    (user) =>
-      user.username === username &&
-      user.email === email &&
-      user.password === password
+    (user) => user.username === username && user.email === email
   );
+  if (user && (await bcrypt.compare(password, user.password))) {
+    request.session.user = user;
+    return response.redirect("/landing");
+  }
 
   if (!user) {
     return response.render("login", {
       error: "Invalid credentials",
     });
   }
-
-  request.session.user = user;
-  response.redirect("/landing");
 });
 
 // POST /logout - Logs a user out
@@ -117,15 +115,13 @@ app.get("/", (request, response) => {
 
 // GET /landing - Shows a welcome page for users, shows the names of all users if an admin
 app.get("/landing", (request, response) => {
-  if (request.session.user.role === "admin") {
-    response.render("landing", {
-      users: USERS,
-    });
-  } else {
-    response.render("landing", {
-      username: request.session.user.username,
-    });
+  if (!request.session.user) {
+    return response.redirect("/login");
   }
+  response.render("landing", {
+    user: request.session.user,
+  });
+  const user = USERS.find((user) => user.username === username);
 });
 
 // Start server
