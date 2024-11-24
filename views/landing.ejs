@@ -1,7 +1,9 @@
 <%- include('partials/header', { title: "Sign Up" }) %> <% if
 (request.session.user.role === "user") { %>
-<h1>Welcome to the User Management System <%= username %></h1>
-<p>This is your personal dashboard where you can view your exclusive content</p>
+<h1>Welcome to the User Management System <%= username %>!</h1>
+<p>
+  This is your personal dashboard where you can view your exclusive content!
+</p>
 
 <!-- Your dashboard content goes here -->
 <div class="landing-content">
@@ -21,8 +23,10 @@
   </ul>
 </div>
 <% } %> <% if (request.session.user.role === "admin") { %>
-<h1>Welcome to the Admin Dashboard</h1>
-<p>This is the admin dashboard where you can manage all users</p>
+<h1>Welcome to the Admin Dashboard <%= username %>!</h1>
+<p>
+  This is the admin dashboard where you can manage all users and other activity!
+</p>
 
 <div class="landing-content">
   <h3>Users</h3>
@@ -30,6 +34,14 @@
     <% USERS.forEach((user) => { %>
     <li><%= user.username %></li>
     <% }); %>
+  </ul>
+
+  <h3>System Alerts</h3>
+  <ul>
+    <li>System update: New feature added</li>
+    <li>Security update: Patch applied</li>
+    <li>Performance update: Optimization made</li>
+    <li>Support update: Bug fixed</li>
   </ul>
   <% } %>
 

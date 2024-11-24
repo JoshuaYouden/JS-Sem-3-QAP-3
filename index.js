@@ -46,19 +46,22 @@ app.get("/login", (request, response) => {
 
 // POST /login - Allows a user to login
 app.post("/login", (request, response) => {
-  const { email, password } = request.body;
+  const { username, email, password } = request.body;
   const user = USERS.find(
-    (user) => user.email === email && user.password === password
+    (user) =>
+      user.username === username &&
+      user.email === email &&
+      user.password === password
   );
 
   if (!user) {
     return response.render("login", {
-      error: "Invalid email or password",
+      error: "Invalid credentials",
     });
   }
 
   request.session.user = user;
-  return response.redirect("/landing");
+  response.redirect("/landing");
 });
 
 // POST /logout - Logs a user out
@@ -109,7 +112,7 @@ app.get("/", (request, response) => {
   if (request.session.user) {
     return response.redirect("/landing");
   }
-  response.render("home");
+  response.render("index");
 });
 
 // GET /landing - Shows a welcome page for users, shows the names of all users if an admin
