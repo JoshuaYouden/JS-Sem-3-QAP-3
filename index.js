@@ -61,13 +61,48 @@ app.post("/login", (request, response) => {
   return response.redirect("/landing");
 });
 
+// POST /logout - Logs a user out
+app.post("/logout", (request, response) => {
+  request.session.destroy(() => {
+    response.redirect("/");
+  });
+});
+
 // GET /signup - Render signup form
 app.get("/signup", (request, response) => {
-  response.render("signup");
+  const { email, username, password } = request.query;
+  return response.render("signup", {
+    email: email ?? "",
+    username: username ?? "",
+  });
 });
 
 // POST /signup - Allows a user to signup
-app.post("/signup", (request, response) => {});
+app.post("/signup", (request, response) => {
+  const { username, email, password } = request.body;
+
+  const existingUser = USERS.find(
+    (existingUser) => existingUser.email === email
+  );
+  if (existingUser) {
+    return response.render("error", {
+      error: "Email already associated with an account",
+    });
+  }
+
+  const newUser = {
+    id: USERS.length + 1,
+    username,
+    email,
+    password: bcrypt.hashSync(password, SALT_ROUNDS),
+    role: "user",
+  };
+
+  USERS.push(newUser);
+
+  request.session.user = newUser;
+  return response.redirect("/landing");
+});
 
 // GET / - Render index page or redirect to landing if logged in
 app.get("/", (request, response) => {
